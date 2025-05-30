@@ -1,0 +1,1 @@
+python scripts/test_ours.py --cfg configs/efn4_fpn_sbi_adv.yaml -t SBI
