@@ -97,7 +97,7 @@ class SBIFaceForensic(MasterDataset):
                 #Selecting data from data list
                 img_path = self.image_paths_r[idx]
                 label = self.labels_r[idx]
-                vid_id = img_path.split("\\")[-2]
+                vid_id = img_path.split(os.sep)[-2]
                 img = self._load_img(img_path)
                 if self.split == 'test':
                     img = crop_by_margin(img, margin=[5, 5])
