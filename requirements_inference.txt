@@ -85,7 +85,7 @@ python-box==7.2.0
 python-dateutil==2.8.2
 pytz==2025.2
 PyWavelets==1.4.1
-pywin32==310
+#pywin32==310
 PyYAML==6.0.2
 qudida==0.0.4
 referencing==0.35.1
@@ -116,8 +116,8 @@ tifffile==2023.7.10
 timeago==1.0.14
 toml==0.10.2
 toolz==1.0.0
-torch==1.8.0+cu111
-torchvision==0.9.0+cu111
+#torch==1.8.0+cu111
+#torchvision==0.9.0+cu111
 tornado==6.4.2
 tqdm==4.67.1
 typing-extensions==3.7.4.3
