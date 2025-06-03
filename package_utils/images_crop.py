@@ -29,11 +29,12 @@ def facecrop(model, org_path, save_path, period=1, num_frames=10, dataset='origi
         mask_cap = cv2.VideoCapture(mask_path)
     frame_count_org = int(cap_org.get(cv2.CAP_PROP_FRAME_COUNT))
     print("N frame count --- ", frame_count_org)
-    
+    vid_name, _ = os.path.splitext(os.path.basename(org_path))
     if label is not None:
-        save_path_ = save_path + f'/frames/{dataset}/{str(label)}/' + os.path.basename(org_path).replace('.mp4','/')
+
+        save_path_ = save_path + f'/frames/{dataset}/{str(label)}/' + vid_name + '/'
     else:
-        save_path_ = save_path + f'/frames/{dataset}/' + os.path.basename(org_path).replace('.mp4','/')
+        save_path_ = save_path + f'/frames/{dataset}/' + vid_name + '/'
     os.makedirs(save_path_, exist_ok=True)
 
     if mask_path is not None:
