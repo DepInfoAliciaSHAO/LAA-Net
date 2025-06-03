@@ -15,11 +15,11 @@ from retinaface.utils import vis_annotations
 import torch
 
 #Root directory containing splits
-ROOT = r"E:/ShareID/TestDataSets/Forensic/ff++_test/"
-SAVE_DIR = r"E:/ShareID/TestDataSets/Forensic/ff++_test/"
+ROOT = r"E:\ShareID\TestDataSets\Celeb-DF-v2\laa-net_test"
+SAVE_DIR = r"E:\ShareID\TestDataSets\Celeb-DF-v2\laa-net_test"
 IMAGE_H, IMAGE_W, IMAGE_C = 256, 256, 3
 PADDING = 0.25
-ANNOTATION_FILE_PATH = r"E:\ShareID\TestDataSets\Forensic\ff++_test\List_of_testing_videos.txt"
+ANNOTATION_FILE_PATH = r"E:\ShareID\TestDataSets\Celeb-DF-v2\laa-net_test\List_of_testing_videos_single.txt"
 
 
 def facecrop(model, org_path, save_path, period=1, num_frames=10, dataset='original', label=None, mask_path=None, padding=PADDING):
@@ -127,7 +127,7 @@ if __name__=='__main__':
     parser.add_argument('-d', dest='dataset', 
                               #choices=['FaceShifter','Face2Face','Deepfakes','FaceSwap','NeuralTextures',\
                                        #'Original','Celeb-real','Celeb-synthesis','YouTube-real','DFDC','DFDCP','method_A','method_B','original_videos', 'custom']
-                                       )
+                              default = "")
     parser.add_argument('-c', dest='comp', choices=['raw','c23','c40'], default='raw')
     parser.add_argument('-n', dest='num_frames', type=int,default=32)
     parser.add_argument('-t', dest='task', choices=['train', 'val', 'test'], default='train')
