@@ -15,6 +15,7 @@ from retinaface.utils import vis_annotations
 import torch
 
 #Root directory containing splits
+#Relative to laa-net directory
 ROOT = r"E:\ShareID\TestDataSets\Celeb-DF-v2\laa-net_test"
 SAVE_DIR = r"E:\ShareID\TestDataSets\Celeb-DF-v2\laa-net_test"
 IMAGE_H, IMAGE_W, IMAGE_C = 256, 256, 3
