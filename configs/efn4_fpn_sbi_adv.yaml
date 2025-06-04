@@ -54,13 +54,14 @@ DATASET:
       FROM_FILE: False
       # FAKETYPE: [original, Deepfakes]
       # FAKETYPE: [original, Deepfakes, Face2Face, FaceSwap, NeuralTextures]
-      # FAKETYPE: [Celeb-real, Celeb-synthesis, YouTube-real]
+      #FAKETYPE: [Celeb-real, Celeb-synthesis, YouTube-real]
       # FAKETYPE: [method_A, method_B, original_videos]
       # FAKETYPE: [fake, real]
       # FAKETYPE: [DeepFakeDetection_original, DeepFakeDetection]
-      # FAKETYPE: [fake_test, real_test]
-      FAKETYPE:  [actors, DeepFakeDetection, Deepfakes, Face2Face, FaceShifter, FaceSwap, NeuralTextures, youtube]
-      ANNO_FILE: E:\ShareID\TestDataSets\Forensic\ff++_test\List_of_testing_videos.txt
+      # FAKETYPE: [fake_test, real_test]'/
+      FAKETYPE:  [actors, youtube, DeepFakeDetection, Deepfakes, Face2Face, FaceShifter, 
+        FaceSwap, NeuralTextures]
+      ANNO_FILE: E:\ShareID\TestDataSets\Forensic\ff++_test\List_of_testing_videos_ff++.txt
       LABEL_FOLDER: [real, fake]
   TRANSFORM:
     geometry:
@@ -147,9 +148,9 @@ TEST:
   test_file: ''
   vis_hm: True
   threshold: 0.5
-  flip_test: True
+  flip_test: False
   video_level: False
-  pretrained: 'pretrained_weights/PoseEfficientNet_EFN_hm100_EFPN_NoBasedCLS_Focal_C3_256Cstency100_32BI_SAM(Adam)_ADV_Erasing1_OutSigmoid_model_best.pth'
+  pretrained: 'pretrained_weights/PoseEfficientNet_EFN_hm10_EFPN_NoBasedCLS_Focal_C3_256Cst100_8SBI_SAM(Adam)_ADV_Era1_OutSigmoid_1e7_boost500_UnFZ_model_best.pth'
 PREPROCESSING:
   DATASET: FaceForensics
   SPLIT: train
