@@ -259,7 +259,7 @@ class SBIFaceForensic(MasterDataset):
                 label = np.expand_dims(label, axis=-1)
                 flag = False
             except Exception as e:
-                # print(f'There is something wrong! Please check the DataLoader!, {e}')
+                print(f'There is something wrong! Please check the DataLoader!, {e}')
                 flag = True
                 idx=torch.randint(low=0, high=self.__len__(), size=(1,)).item()
                 
