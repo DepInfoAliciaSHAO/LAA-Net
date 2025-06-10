@@ -57,13 +57,16 @@ if __name__=='__main__':
         mem_all_tensors.to('cuda:0')
 
     #Configuing GPU devices
-    devices = torch.device('cpu')
+    #devices = torch.device('cpu')
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
     
-    if 'gpus' in cfg.TRAIN.gpus and cfg.TRAIN.gpus is not None:
+    device_count = torch.cuda.device_count()
+    if device_count >= 1:
+
+    #if 'gpus' in cfg.TRAIN.gpus and cfg.TRAIN.gpus is not None:
         #Only support a single gpu for training now
-        devices = torch.device('cuda:1')
+        devices = torch.device('cuda')
     model = build_model(cfg.MODEL, MODELS).cuda().to(torch.float64)
     
     #Loading Dataloader
@@ -77,7 +80,7 @@ if __name__=='__main__':
                                 pin_memory=cfg.DATASET.PIN_MEMORY,
                                 num_workers=cfg.DATASET.NUM_WORKERS,
                                 worker_init_fn=val_dataset.train_worker_init_fn,
-                                collate_fn=val_dataset.train_collate_fn)
+                               collate_fn=val_dataset.train_collate_fn)
                                 
     logger.info('Loading val dataloader successfully! -- {}'.format(time.time() - start_loading))
     
@@ -94,16 +97,16 @@ if __name__=='__main__':
                                   collate_fn=train_dataset.train_collate_fn)
     logger.info('Loading Train dataloader successfully! -- {}'.format(time.time() - start_loading))
     
-    start_loading = time.time()
-    test_dataset = build_dataset(cfg.DATASET, 
-                                 DATASETS,
-                                 default_args=dict(split='test', config=cfg.DATASET))
-    test_dataloader = DataLoader(test_dataset,
-                                 batch_size=cfg.TRAIN.batch_size * len(cfg.TRAIN.gpus),
-                                 shuffle=True,
-                                 pin_memory=cfg.DATASET.PIN_MEMORY,
-                                 num_workers=cfg.DATASET.NUM_WORKERS)
-    logger.info('Loading Test dataloader successfully! -- {}'.format(time.time() - start_loading))
+    #start_loading = time.time()
+    #test_dataset = build_dataset(cfg.DATASET, 
+    #                             DATASETS,
+    #                             default_args=dict(split='test', config=cfg.DATASET))
+    #test_dataloader = DataLoader(test_dataset,
+    #                             batch_size=cfg.TRAIN.batch_size * len(cfg.TRAIN.gpus),
+    #                             shuffle=True,
+    #                             pin_memory=cfg.DATASET.PIN_MEMORY,
+    #                             num_workers=cfg.DATASET.NUM_WORKERS)
+    #logger.info('Loading Test dataloader successfully! -- {}'.format(time.time() - start_loading))
     
     #Defining Loss function and Optimizer
     critetion = build_losses(cfg.TRAIN.loss, LOSSES, default_args=dict(cfg=cfg.TRAIN.loss)).cuda().to(torch.float64)
@@ -120,6 +123,10 @@ if __name__=='__main__':
         model = nn.DataParallel(model, device_ids=cfg.TRAIN.gpus).cuda().to(torch.float64)
     else:
         model = model.cuda().to(torch.float64)
+
+    for param_group in optimizer.param_groups:
+      if 'initial_lr' not in param_group:
+        param_group['initial_lr'] = param_group['lr']
     
     #Learning rate Scheduler
     if cfg.TRAIN.lr_scheduler == 'MultiStepLR':
