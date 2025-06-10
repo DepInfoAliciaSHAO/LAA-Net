@@ -2,12 +2,13 @@ PREPROCESSING:
   DATASET: Celeb-DFv2
   COMPRESSION: c0
   SPLIT: test
-  ROOT: /data/deepfake_cluster/datasets_df/Celeb-DFv2/
-  # FAKETYPE: [Deepfakes, Face2Face, FaceSwap, NeuralTextures]
-  FAKETYPE: [YouTube-real]
+  #Root path must be absolute for some reason
+  ROOT: C:\Users\alici\OneDrive\Bureau\ff++_test
+  FAKETYPE: [Deepfakes, Face2Face, FaceSwap, NeuralTextures, FaceShifter, DeepFakeDetection, youtube, actors]
+  #FAKETYPE: [Celeb-real, Celeb-synthesis, YouTube-real]
   IMAGE_SUFFIX: png
   DATA_TYPE: frames
-  LABEL: [real]
+  LABEL: [real, fake]
   facial_lm_pretrained: pretrained/shape_predictor_81_face_landmarks.dat
   N_LANDMARKS: 81
   SAMPLING:
