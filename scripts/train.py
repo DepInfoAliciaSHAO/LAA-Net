@@ -117,22 +117,21 @@ if __name__=='__main__':
     else:
         optimizer = optim.SGD(model.parameters(), lr=cfg.TRAIN.lr, weight_decay=1e-5, momentum=0.9)
         
+    for param_group in optimizer.param_groups:
+      if 'initial_lr' not in param_group:
+        param_group['initial_lr'] = param_group['lr']
     #Loading model
     model, optimizer, start_epoch = preset_model(cfg, model, optimizer=optimizer)
     if len(cfg.TRAIN.gpus) > 0:
         model = nn.DataParallel(model, device_ids=cfg.TRAIN.gpus).cuda().to(torch.float64)
     else:
         model = model.cuda().to(torch.float64)
-
-    for param_group in optimizer.param_groups:
-      if 'initial_lr' not in param_group:
-        param_group['initial_lr'] = param_group['lr']
     
     #Learning rate Scheduler
     if cfg.TRAIN.lr_scheduler == 'MultiStepLR':
         lr_scheduler = optim.lr_scheduler.MultiStepLR(optimizer, **cfg.TRAIN.lr_scheduler)
     else:
-        lr_scheduler = LinearDecayLR(optimizer, cfg.TRAIN.epochs, cfg.TRAIN.epochs//4, last_epoch=cfg.TRAIN.begin_epoch, booster=4)
+        lr_scheduler = LinearDecayLR(optimizer, cfg.TRAIN.epochs, cfg.TRAIN.epochs//4, last_epoch=start_epoch, booster=4)
 
     #Enabling tensorboard
     writer = SummaryWriter('.tensorboard/{}_{}'.format(datetime.today().strftime('%Y-%m-%d'), cfg.TASK))
