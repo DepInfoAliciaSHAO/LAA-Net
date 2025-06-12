@@ -9,7 +9,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--cfg", "configs/efn4_fpn_sbi_adv.yaml", "-t", "SBI"]
+            "args": ["--cfg", "configs/efn4_fpn_sbi_adv.yaml"]
         }
     ]
 }
