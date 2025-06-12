@@ -52,7 +52,7 @@ def name_resolve(path):
         name = os.path.splitext(os.path.basename(path))[0]
         vid_id, frame_id = name.split('_')[0:2]
     else:
-        name = path.split('/')
+        name = path.split(os.sep)
         vid_id, frame_id = name[-2], os.path.splitext(name[-1])[0]
     return vid_id, frame_id
 
@@ -167,10 +167,10 @@ class BIOnlineGeneration():
         self.file_names = [item['file_name'] for item in self.data_record]
         
         if COMPRESSION != 'c23':
-            self.labels = [item['image_path'].split('/')[-3] for item in self.data_record]
+            self.labels = [item['image_path'].split(os.sep)[-3] for item in self.data_record]
         else:
-            self.labels = [item['image_path'].split('/')[-2] for item in self.data_record]
-        self.vid_ids = [item['image_path'].split('/')[-2] for item in self.data_record]
+            self.labels = [item['image_path'].split(os.sep)[-2] for item in self.data_record]
+        self.vid_ids = [item['image_path'].split(os.sep)[-2] for item in self.data_record]
         
         # predefine mask distortion
         self.distortion = iaa.Sequential([iaa.PiecewiseAffine(scale=(0.01, 0.15))])

@@ -31,13 +31,13 @@ def facecrop(model, org_path, save_path, period=1, num_frames=10, dataset='origi
     print("N frame count --- ", frame_count_org)
     
     if label is not None:
-        save_path_ = save_path + f'/frames/{dataset}/{str(label)}/' + os.path.basename(org_path).replace('.mp4','/')
+        save_path_ = save_path + f'/frames/{dataset}/{str(label)}/' + os.path.basename(org_path).replace('.mp4',os.sep)
     else:
-        save_path_ = save_path + f'/frames/{dataset}/' + os.path.basename(org_path).replace('.mp4','/')
+        save_path_ = save_path + f'/frames/{dataset}/' + os.path.basename(org_path).replace('.mp4',os.sep)
     os.makedirs(save_path_, exist_ok=True)
 
     if mask_path is not None:
-        save_mask_path_ = save_path + f'/masks/{dataset}/' + os.path.basename(mask_path).replace('.mp4','/')
+        save_mask_path_ = save_path + f'/masks/{dataset}/' + os.path.basename(mask_path).replace('.mp4',os.sep)
         os.makedirs(save_mask_path_, exist_ok=True)
     
     frame_idxs = np.linspace(0, frame_count_org - 1, num_frames, endpoint=True, dtype=np.int64)
@@ -188,7 +188,7 @@ if __name__=='__main__':
         # Annotation file for DFDC
         with open(os.path.join(dataset_path, args.task, 'labels.csv')) as f:
             df = pd.read_csv(f)
-            # df['path'] = df['label'].astype(str) + '/' + df['filename']
+            # df['path'] = df['label'].astype(str) + os.sep + df['filename']
             vid_ids = df['filename'].values.reshape(-1)
             labels = df['label'].values.reshape(-1) 
     else:
@@ -228,7 +228,7 @@ if __name__=='__main__':
         [mask_mov_path_list.append(mask_mov_paths+i+'.mp4') for i in file_list]
     else:
         if 'v2' in SAVE_DIR:
-            [movies_path_list.append(os.path.join(movies_path, i.split('/')[-1])) for i in file_list]
+            [movies_path_list.append(os.path.join(movies_path, i.split(os.sep)[-1])) for i in file_list]
         else:
             [movies_path_list.append(os.path.join(movies_path, i)) for i in file_list]
     
@@ -241,7 +241,7 @@ if __name__=='__main__':
     os.makedirs(save_path, exist_ok=True)
     
     for i in tqdm(range(0, n_sample)):
-        # folder_path=movies_path_list[i].replace('videos/','frames/').replace('.mp4','/')
+        # folder_path=movies_path_list[i].replace('videos/','frames/').replace('.mp4',os.sep)
         # if len(glob(folder_path.replace('/frames/','/retina/')+'*.npy')) < args.num_frames:
         if len(labels):
             facecrop(model, movies_path_list[i], save_path=save_path, num_frames=args.num_frames, dataset=args.dataset, label=labels[i])
