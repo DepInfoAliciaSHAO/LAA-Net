@@ -97,7 +97,7 @@ class SBIFaceForensic(MasterDataset):
                 #Selecting data from data list
                 img_path = self.image_paths_r[idx]
                 label = self.labels_r[idx]
-                vid_id = img_path.split(os.sep)[-2]
+                vid_id = img_path.split('/')[-2]
                 img = self._load_img(img_path)
                 if self.split == 'test':
                     img = crop_by_margin(img, margin=[5, 5])
@@ -259,7 +259,7 @@ class SBIFaceForensic(MasterDataset):
                 label = np.expand_dims(label, axis=-1)
                 flag = False
             except Exception as e:
-                print(f'There is something wrong! Please check the DataLoader!, {e}')
+                # print(f'There is something wrong! Please check the DataLoader!, {e}')
                 flag = True
                 idx=torch.randint(low=0, high=self.__len__(), size=(1,)).item()
                 

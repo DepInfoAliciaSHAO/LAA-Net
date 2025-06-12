@@ -14,13 +14,11 @@ from retinaface.pre_trained_models import get_model
 from retinaface.utils import vis_annotations
 import torch
 
-#Root directory containing splits
-#Relative to laa-net directory
-ROOT = r"E:\ShareID\TestDataSets\Celeb-DF-v2\laa-net_test"
-SAVE_DIR = r"E:\ShareID\TestDataSets\Celeb-DF-v2\laa-net_test"
+
+ROOT = '/home/alvaro/tests_alvaro/dataset'
+SAVE_DIR = f'{ROOT}/FaceForensics++/c23'
 IMAGE_H, IMAGE_W, IMAGE_C = 256, 256, 3
 PADDING = 0.25
-ANNOTATION_FILE_PATH = r"E:\ShareID\TestDataSets\Celeb-DF-v2\laa-net_test\List_of_testing_videos_single.txt"
 
 
 def facecrop(model, org_path, save_path, period=1, num_frames=10, dataset='original', label=None, mask_path=None, padding=PADDING):
@@ -28,14 +26,14 @@ def facecrop(model, org_path, save_path, period=1, num_frames=10, dataset='origi
     cap_org = cv2.VideoCapture(org_path)
     if mask_path is not None:
         mask_cap = cv2.VideoCapture(mask_path)
+    croppedfaces=[]
     frame_count_org = int(cap_org.get(cv2.CAP_PROP_FRAME_COUNT))
     print("N frame count --- ", frame_count_org)
-    vid_name, _ = os.path.splitext(os.path.basename(org_path))
+    
     if label is not None:
-
-        save_path_ = save_path + f'/frames/{dataset}/{str(label)}/' + vid_name + '/'
+        save_path_ = save_path + f'/frames/{dataset}/{str(label)}/' + os.path.basename(org_path).replace('.mp4','/')
     else:
-        save_path_ = save_path + f'/frames/{dataset}/' + vid_name + '/'
+        save_path_ = save_path + f'/frames/{dataset}/' + os.path.basename(org_path).replace('.mp4','/')
     os.makedirs(save_path_, exist_ok=True)
 
     if mask_path is not None:
@@ -84,10 +82,10 @@ def facecrop(model, org_path, save_path, period=1, num_frames=10, dataset='origi
                     score = faces[face_idx]['score']                    
                     
                     if face_s > face_s_max and score > score_max:
-                        f_c_x0 = int(max(0, x0 - int(face_w*padding)) + 0.5)
-                        f_c_x1 = int(min(width, x1 + int(face_w*padding)) + 0.5)
-                        f_c_y0 = int(max(0, y0 - int(face_h*padding)) + 0.5)
-                        f_c_y1 = int(min(height, y1 + int(face_h*padding)) + 0.5)
+                        f_c_x0 = max(0, x0 - int(face_w*padding))
+                        f_c_x1 = min(width, x1 + int(face_w*padding))
+                        f_c_y0 = max(0, y0 - int(face_h*padding))
+                        f_c_y1 = min(height, y1 + int(face_h*padding))
                         
                         face_crop = frame_org[f_c_y0:f_c_y1, f_c_x0:f_c_x1, :]
                         if mask_path is not None:
@@ -124,15 +122,13 @@ def facecrop(model, org_path, save_path, period=1, num_frames=10, dataset='origi
 
 
 if __name__=='__main__':
-
     parser=argparse.ArgumentParser()
     parser.add_argument('-d', dest='dataset', 
-                              #choices=['FaceShifter','Face2Face','Deepfakes','FaceSwap','NeuralTextures',\
-                                       #'Original','Celeb-real','Celeb-synthesis','YouTube-real','DFDC','DFDCP','method_A','method_B','original_videos', 'custom']
-                              default = "")
-    parser.add_argument('-c', dest='comp', choices=['raw','c23','c40'], default='raw')
+                              choices=['FaceShifter','Face2Face','Deepfakes','FaceSwap','NeuralTextures',\
+                                       'Original','Celeb-real','Celeb-synthesis','YouTube-real','DFDC','DFDCP','method_A','method_B','original_videos'], default='FaceShifter')
+    parser.add_argument('-c', dest='comp', choices=['raw','c23','c40'], default='c23')
     parser.add_argument('-n', dest='num_frames', type=int,default=32)
-    parser.add_argument('-t', dest='task', choices=['train', 'val', 'test'], default='train')
+    parser.add_argument('-t', dest='task', choices=['train', 'val', 'test'], default='test')
     parser.add_argument('--save_mask', '-sm', action='store_true')
     parser.add_argument('--alloc_mem', '-a',  help='Pre allocating GPU memory', action='store_true')
     args=parser.parse_args()
@@ -146,105 +142,96 @@ if __name__=='__main__':
     device=torch.device('cuda')
 
     # Setting the dataset path based on the dataset name
-    #if args.dataset=='Original':
-    #    dataset_path='{}/FaceForensics++/original_download/original_sequences/youtube/'.format(ROOT)
-    #elif args.dataset=='DeepFakeDetection_original':
-    #    dataset_path='/data/FaceForensics++/original_sequences/actors/{}/'.format(args.comp)
-    #elif args.dataset in ['DeepFakeDetection','FaceShifter','Face2Face','Deepfakes','FaceSwap','NeuralTextures']:
-    #    dataset_path='{}/FaceForensics++/original_download/manipulated_sequences/{}/'.format(ROOT, args.dataset)
-    #elif args.dataset in ['Celeb-real','Celeb-synthesis','YouTube-real']:
-    #    if 'v1' in SAVE_DIR:
-    #        dataset_path='{}/Celeb-DFv1/'.format(ROOT)
-    #    else:
-    #        dataset_path='{}/'.format(ROOT)
-    #elif args.dataset in ['method_A','method_B','original_videos']:
-    #    dataset_path='{}/DFDCP/'.format(ROOT)
-    #elif args.dataset in ['DFDC']:
-    #    dataset_path='{}/DFDC/'.format(ROOT)
-    #else:
-    dataset_path='{}/'.format(ROOT)
+    if args.dataset=='Original':
+        dataset_path='{}/FaceForensics++/original_download/original_sequences/youtube/'.format(ROOT)
+    elif args.dataset=='DeepFakeDetection_original':
+        dataset_path='/data/FaceForensics++/original_sequences/actors/{}/'.format(args.comp)
+    elif args.dataset in ['DeepFakeDetection','FaceShifter','Face2Face','Deepfakes','FaceSwap','NeuralTextures']:
+        dataset_path='{}/FaceForensics++/original_download/manipulated_sequences/{}/'.format(ROOT, args.dataset)
+    elif args.dataset in ['Celeb-real','Celeb-synthesis','YouTube-real']:
+        if 'v1' in SAVE_DIR:
+            dataset_path='{}/Celeb-DFv1/'.format(ROOT)
+        else:
+            dataset_path='{}/Celeb-DFv2/Celeb-DF-v2/'.format(ROOT)
+    elif args.dataset in ['method_A','method_B','original_videos']:
+        dataset_path='{}/DFDCP/'.format(ROOT)
+    elif args.dataset in ['DFDC']:
+        dataset_path='{}/DFDC/'.format(ROOT)
+    else:
+        raise NotImplementedError
+    
     # Loading model
     model = get_model("resnet50_2020-07-20", max_size=2048, device=device)
     model.eval()
 
     labels = []
-    #if args.dataset in ['Original','DeepFakeDetection','FaceShifter','Face2Face','Deepfakes','FaceSwap','NeuralTextures']:
-    #    movies_path = os.path.join(dataset_path, args.comp, 'videos/')
-    #    mask_mov_paths = os.path.join(dataset_path, 'masks', 'videos/')
-    #    
-    #    # Annotation file for FF++
-    #    with open(f'{ROOT}/FaceForensics++/original_download/{args.task}.json') as f:
-    #        vid_ids = json.load(f)
-    #el
-    
-    if args.dataset in ['Celeb-real', 'Celeb-synthesis', 'YouTube-real']:
+    if args.dataset in ['Original','DeepFakeDetection','FaceShifter','Face2Face','Deepfakes','FaceSwap','NeuralTextures']:
+        # movies_path = os.path.join(dataset_path, args.comp, 'videos/')
+        movies_path = dataset_path
+        mask_mov_paths = os.path.join(dataset_path, 'masks', 'videos/')
+        
+        # Annotation file for FF++
+        with open(f'{ROOT}/FaceForensics++/original_download/splits/{args.task}.json') as f:
+            vid_ids = json.load(f)
+    elif args.dataset in ['Celeb-real', 'Celeb-synthesis', 'YouTube-real']:
         if 'v1' in SAVE_DIR:
             movies_path = dataset_path
         else:
-            #movies_path = os.path.join(dataset_path, args.dataset, 'videos')
-            #movies_path = os.path.join(dataset_path, args.dataset)
-            movies_path = dataset_path
+            movies_path = os.path.join(dataset_path, args.dataset, 'videos')
+            
         # Annotation file for Celeb-DF
         with open(f'{dataset_path}List_of_{args.task}ing_videos.txt') as f:
-            vid_ids = pd.read_csv(f, header = None).values.reshape(-1)
-    #elif args.dataset in ['DFDC']:
-    #    movies_path = os.path.join(dataset_path, args.task, 'videos')
-    #    
-    #    # Annotation file for DFDC
-    #    with open(os.path.join(dataset_path, args.task, 'labels.csv')) as f:
-    #        df = pd.read_csv(f)
-    #        # df['path'] = df['label'].astype(str) + '/' + df['filename']
-    #        vid_ids = df['filename'].values.reshape(-1)
-    #        labels = df['label'].values.reshape(-1) 
-    #elif args.dataset in ['DFDCP']:
-    #    movies_path = dataset_path
-    #    # Annotation file for DFDCP
-    #    with open(f'{ROOT}/DFDCP/dataset.json') as f:
-    #        movie_data = json.load(f)
-    #    vid_ids = []
-    #    for mv_id, item_data in movie_data.items():
-    #        if item_data["set"] == args.task:
-    #            vid_ids.append(mv_id)
-    else: 
+            vid_ids = pd.read_csv(f).values.reshape(-1)
+    elif args.dataset in ['DFDC']:
+        movies_path = os.path.join(dataset_path, args.task, 'videos')
+        
+        # Annotation file for DFDC
+        with open(os.path.join(dataset_path, args.task, 'labels.csv')) as f:
+            df = pd.read_csv(f)
+            # df['path'] = df['label'].astype(str) + '/' + df['filename']
+            vid_ids = df['filename'].values.reshape(-1)
+            labels = df['label'].values.reshape(-1) 
+    else:
         movies_path = dataset_path
-        with open(ANNOTATION_FILE_PATH) as f:
-            vid_ids = pd.read_csv(f, header = None).values.reshape(-1)
-
+        
+        # Annotation file for DFDCP
+        with open(f'{ROOT}/DFDCP/dataset.json') as f:
+            movie_data = json.load(f)
+        vid_ids = []
+        for mv_id, item_data in movie_data.items():
+            if item_data["set"] == args.task:
+                vid_ids.append(mv_id)
+    
     movies_path_list = []
     mask_mov_path_list = []
     file_list = []
     
     # Loading the list of specific video's names for an invidual task 'train/val/test
     for i in range(len(vid_ids)):    
-        #if args.dataset == 'Original':   
-        #    file_list += vid_ids[i]
-        #elif args.dataset in ['Face2Face','Deepfakes','FaceSwap','NeuralTextures']:
-        #    file_list.append('_'.join([vid_ids[i][0], vid_ids[i][1]]))
-        #    file_list.append('_'.join([vid_ids[i][1], vid_ids[i][0]]))
-        #elif args.dataset in ['method_A','method_B','original_videos']:
-        #    if args.dataset in vid_ids[i]:
-        #        file_list.append(vid_ids[i])
-        #elif args.dataset in ['DFDC']:
-        #    file_list.append(vid_ids[i])
-        #elif args.dataset in ['Celeb-real', 'Celeb-synthesis', 'YouTube-real']:
-        #    if args.dataset in vid_ids[i]:
-        #        file_list.append(vid_ids[i].split(' ')[-1])
-        #else:
+        if args.dataset == 'Original':   
+            file_list += vid_ids[i]
+        elif args.dataset in ['Face2Face','Deepfakes','FaceSwap','NeuralTextures']:
+            file_list.append('_'.join([vid_ids[i][0], vid_ids[i][1]]))
+            file_list.append('_'.join([vid_ids[i][1], vid_ids[i][0]]))
+        elif args.dataset in ['method_A','method_B','original_videos']:
+            if args.dataset in vid_ids[i]:
+                file_list.append(vid_ids[i])
+        elif args.dataset in ['DFDC']:
+            file_list.append(vid_ids[i])
+        else:
             if args.dataset in vid_ids[i]:
                 file_list.append(vid_ids[i].split(' ')[-1])
     
     # movies_path_list = sorted(glob(movies_path+'*.mp4'))
-    #if args.dataset in ['Original','DeepFakeDetection','FaceShifter','Face2Face','Deepfakes','FaceSwap','NeuralTextures']:
-    #    [movies_path_list.append(movies_path+i+'.mp4') for i in file_list]
-    #    [mask_mov_path_list.append(mask_mov_paths+i+'.mp4') for i in file_list]
-    #elif args.dataset in ['Celeb-real', 'Celeb-synthesis', 'YouTube-real', 'DFDC','DFDCP','method_A','method_B','original_videos']:
-    #    if 'v2' in SAVE_DIR:
-    #        [movies_path_list.append(os.path.join(movies_path, i.split('/')[-1])) for i in file_list]
-    #    else:
-    #        [movies_path_list.append(os.path.join(movies_path, i)) for i in file_list]
-    #else:
-    [movies_path_list.append(os.path.join(movies_path, i)) for i in file_list]
-
+    if args.dataset in ['Original','DeepFakeDetection','FaceShifter','Face2Face','Deepfakes','FaceSwap','NeuralTextures']:
+        [movies_path_list.append(movies_path+i+'.mp4') for i in file_list]
+        [mask_mov_path_list.append(mask_mov_paths+i+'.mp4') for i in file_list]
+    else:
+        if 'v2' in SAVE_DIR:
+            [movies_path_list.append(os.path.join(movies_path, i.split('/')[-1])) for i in file_list]
+        else:
+            [movies_path_list.append(os.path.join(movies_path, i)) for i in file_list]
+    
     print("{} : videos are exist in {}".format(len(movies_path_list), args.dataset))
     n_sample=len(movies_path_list)
     print(f'number of video samples -- {n_sample}')

@@ -174,11 +174,9 @@ if __name__=='__main__':
                         cls_outputs = outputs['cls']
                 logger.info('Inferencing time --- {}'.format(time.time() - st))
 
-                #if not video_level => concatenate batches => image???
                 if not video_level:
                     total_preds = torch.cat((total_preds, cls_outputs), 0)
                     total_labels = torch.cat((total_labels, labels), 0)
-                #if video_level => store results per video
                 else:
                     for idx, vid_id in enumerate(vid_ids):
                         if vid_id in vid_preds.keys(): 
@@ -187,13 +185,9 @@ if __name__=='__main__':
                             vid_preds[vid_id] = torch.unsqueeze(cls_outputs[idx].clone().detach(), 0).cuda().to(dtype=torch.float64)
                             vid_labels[vid_id] = torch.unsqueeze(labels[idx].clone().detach(), 0).cuda().to(dtype=torch.float64)
             
-            #Out of batch loop
-            #Concatenate by video
             if video_level:
                 for k in vid_preds.keys():
-                    #Pred for a video is the mean of predictions on all frames (in logits)
                     total_preds = torch.cat((total_preds, torch.mean(vid_preds[k], 0, keepdim=True)), 0)
-                    #Store labels (video name)
                     total_labels = torch.cat((total_labels, vid_labels[k]), 0)
 
                 # Calculate accuracy and AUC

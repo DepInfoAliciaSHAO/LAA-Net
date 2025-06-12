@@ -92,7 +92,7 @@ class LandmarkUtility(object):
                 img_paths.extend(img_paths_)
                 
         print('{} image paths have been loaded from {}!'.format(len(img_paths), self.dataset))
-        file_names = [ip.split(os.sep)[-1] for ip in img_paths]
+        file_names = [ip.split('/')[-1] for ip in img_paths]
 
         return img_paths, file_names
 
@@ -211,7 +211,7 @@ class LandmarkUtility(object):
                 assert len(aligned_lmses) == len(img_paths), "The length of images and aligned landmarks is not compatible!"
         
         for i, (p, f) in enumerate(zip(img_paths, file_names)):
-            fake_type = p.split(os.sep)[-2] if self.fake_types != ['original'] else self.fake_types[0]
+            fake_type = p.split('/')[-2] if self.fake_types != ['original'] else self.fake_types[0]
             img_obj = self._img_obj(p, f, id=i, fake_type=fake_type)
             
             if 'orig_lmses' in kwargs.keys(): 
@@ -223,10 +223,9 @@ class LandmarkUtility(object):
 
     def save2json(self, data, fn='faceforensics_processed.json'):
         assert len(data), "Data can not be empty!"
-        #target = "processed_data/{}".format(self.compression)
-        target = os.path.join(cfg.PREPROCESSING.ROOT, "test")
+        target = "processed_data/{}".format(self.compression)
         if not os.path.exists(target):
-            os.mkdir(target)
+            os.makedirs(target)
         fp = os.path.join(target, fn)
         with open(fp, 'w') as f:
             json.dump(data, f)
@@ -264,12 +263,12 @@ if __name__ == '__main__':
         rot_imgs, f_lmses, rot_f_lmses = lm_ins.facial_landmarks(img_paths, f_detector, f_lm_detector)
         
         if save_aligned:
-            os.makedirs(f'{lm_ins.image_root}/{lm_ins.split}/{lm_ins.data_type}/aligned_{lm_ins.fake_types[0]}_{cfg.PREPROCESSING.N_LANDMARKS}', exist_ok=True)
+            os.makedirs(f'{lm_ins.image_root}{lm_ins.split}/{lm_ins.data_type}/aligned_{lm_ins.fake_types[0]}_{cfg.PREPROCESSING.N_LANDMARKS}', exist_ok=True)
             for i, img_p in enumerate(tqdm(img_paths, dynamic_ncols=True)):
                 rot_img = rot_imgs[i]
                 fn = file_names[i]
-                vid_id = img_p.split(os.sep)[-2]
-                os.makedirs(f'{lm_ins.image_root}/{lm_ins.split}/{lm_ins.data_type}/aligned_{lm_ins.fake_types[0]}_{cfg.PREPROCESSING.N_LANDMARKS}/{vid_id}', exist_ok=True)
+                vid_id = img_p.split('/')[-2]
+                os.makedirs(f'{lm_ins.image_root}{lm_ins.split}/{lm_ins.data_type}/aligned_{lm_ins.fake_types[0]}_{cfg.PREPROCESSING.N_LANDMARKS}/{vid_id}', exist_ok=True)
 
                 aligned_img_p = img_p.replace(lm_ins.fake_types[0], f'aligned_{lm_ins.fake_types[0]}_{cfg.PREPROCESSING.N_LANDMARKS}')
                 cv2.imwrite(os.path.join(lm_ins.image_root, aligned_img_p), rot_img)

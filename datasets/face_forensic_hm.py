@@ -164,7 +164,7 @@ class HeatmapFaceForensic(MasterDataset):
             try:
                 img_path = self.image_paths[idx]
                 label = self.labels[idx]
-                vid_id = img_path.split('\\')[-2]
+                vid_id = img_path.split('/')[-2]
                 img = load_image(img_path)
                 mask = None
 

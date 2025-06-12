@@ -57,16 +57,13 @@ if __name__=='__main__':
         mem_all_tensors.to('cuda:0')
 
     #Configuing GPU devices
-    #devices = torch.device('cpu')
+    devices = torch.device('cpu')
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
     
-    device_count = torch.cuda.device_count()
-    if device_count >= 1:
-
-    #if 'gpus' in cfg.TRAIN.gpus and cfg.TRAIN.gpus is not None:
+    if 'gpus' in cfg.TRAIN.gpus and cfg.TRAIN.gpus is not None:
         #Only support a single gpu for training now
-        devices = torch.device('cuda')
+        devices = torch.device('cuda:1')
     model = build_model(cfg.MODEL, MODELS).cuda().to(torch.float64)
     
     #Loading Dataloader
@@ -80,7 +77,7 @@ if __name__=='__main__':
                                 pin_memory=cfg.DATASET.PIN_MEMORY,
                                 num_workers=cfg.DATASET.NUM_WORKERS,
                                 worker_init_fn=val_dataset.train_worker_init_fn,
-                               collate_fn=val_dataset.train_collate_fn)
+                                collate_fn=val_dataset.train_collate_fn)
                                 
     logger.info('Loading val dataloader successfully! -- {}'.format(time.time() - start_loading))
     
@@ -97,16 +94,16 @@ if __name__=='__main__':
                                   collate_fn=train_dataset.train_collate_fn)
     logger.info('Loading Train dataloader successfully! -- {}'.format(time.time() - start_loading))
     
-    #start_loading = time.time()
-    #test_dataset = build_dataset(cfg.DATASET, 
-    #                             DATASETS,
-    #                             default_args=dict(split='test', config=cfg.DATASET))
-    #test_dataloader = DataLoader(test_dataset,
-    #                             batch_size=cfg.TRAIN.batch_size * len(cfg.TRAIN.gpus),
-    #                             shuffle=True,
-    #                             pin_memory=cfg.DATASET.PIN_MEMORY,
-    #                             num_workers=cfg.DATASET.NUM_WORKERS)
-    #logger.info('Loading Test dataloader successfully! -- {}'.format(time.time() - start_loading))
+    # start_loading = time.time()
+    # test_dataset = build_dataset(cfg.DATASET, 
+    #                              DATASETS,
+    #                              default_args=dict(split='test', config=cfg.DATASET))
+    # test_dataloader = DataLoader(test_dataset,
+    #                              batch_size=cfg.TRAIN.batch_size * len(cfg.TRAIN.gpus),
+    #                              shuffle=True,
+    #                              pin_memory=cfg.DATASET.PIN_MEMORY,
+    #                              num_workers=cfg.DATASET.NUM_WORKERS)
+    # logger.info('Loading Test dataloader successfully! -- {}'.format(time.time() - start_loading))
     
     #Defining Loss function and Optimizer
     critetion = build_losses(cfg.TRAIN.loss, LOSSES, default_args=dict(cfg=cfg.TRAIN.loss)).cuda().to(torch.float64)
@@ -116,10 +113,11 @@ if __name__=='__main__':
         optimizer = SAM(model.parameters(), optim.Adam, lr=cfg.TRAIN.lr, weight_decay=1e-4)
     else:
         optimizer = optim.SGD(model.parameters(), lr=cfg.TRAIN.lr, weight_decay=1e-5, momentum=0.9)
-        
+    
     for param_group in optimizer.param_groups:
       if 'initial_lr' not in param_group:
         param_group['initial_lr'] = param_group['lr']
+
     #Loading model
     model, optimizer, start_epoch = preset_model(cfg, model, optimizer=optimizer)
     if len(cfg.TRAIN.gpus) > 0:
@@ -147,8 +145,9 @@ if __name__=='__main__':
     logger.info('Starting training process...')
     for epoch in range(start_epoch, cfg.TRAIN.epochs):
         #Unfreezin backbone to update weights
-        if cfg.TRAIN.freeze_backbone and epoch == cfg.TRAIN.warm_up:
-            unfreeze_backbone(model)
+        # if cfg.TRAIN.freeze_backbone and epoch == cfg.TRAIN.warm_up:
+            
+        unfreeze_backbone(model)
         
         np.random.seed(seed + epoch)
         if epoch > 0 and cfg.DATA_RELOAD:

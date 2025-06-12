@@ -278,11 +278,11 @@ class CommonDataset(Dataset, ABC):
             if v is not None and len(v): data[k] = []
         
         for idx, ip in enumerate(image_paths):
-            f_name = ip.split(os.sep)[-1]
+            f_name = ip.split('/')[-1]
             if self.compression == 'c23':
                 vid_id = f_name.split('_frame')[0]
             elif self.compression == 'c0':
-                vid_id = ip.split(os.sep)[-2]
+                vid_id = ip.split('/')[-2]
             else:
                 raise NotImplementedError('Only c23 and c0 compression mode is supported now! Please check again!')
             lb = labels[idx]
