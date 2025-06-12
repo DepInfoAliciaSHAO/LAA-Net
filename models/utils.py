@@ -18,7 +18,7 @@ layers_position = {
 
 def preset_model(cfg, model, optimizer=None):
     #Loading models from config, make sure the pretrained path correct to the model name
-    start_epoch = cfg.TRAIN.begin_epoch #or 0
+    start_epoch = 0
     if 'pretrained' in cfg.TRAIN and os.path.isfile(cfg.TRAIN.pretrained):
         model, optimizer, start_epoch = load_model(model, 
                                                    cfg.TRAIN.pretrained, 
