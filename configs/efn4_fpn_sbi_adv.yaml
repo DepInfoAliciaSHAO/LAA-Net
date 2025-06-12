@@ -5,7 +5,7 @@ SEED: 317
 DATA_RELOAD: True
 DATASET:
   type: SBIFaceForensic
-  TRAIN: False #Switch to True for training mode, False for testing mode
+  TRAIN: True #Switch to True for training mode, False for testing mode
   COMPRESSION: c0
   IMAGE_SUFFIX: png
   NUM_WORKERS: 0
@@ -24,21 +24,22 @@ DATASET:
       VAL: 8
       TEST: 32
     TRAIN:
-      NAME: FF++ # This field to define datasets that can be used to train/in-dataset/cross-dataset evaluation
-      ROOT: /home/users/<user>/data/FaceForensics++/c0/
+      NAME: Celeb-DFv2 # This field to define datasets that can be used to train/in-dataset/cross-dataset evaluation
+      ROOT: E:\ShareID\TestDataSets\Forensic\ff++_test
       # ROOT: /data/deepfake_cluster/datasets_df/FaceForensics++/c0/
       FROM_FILE: True
-      FAKETYPE: [Deepfakes, Face2Face, FaceSwap, NeuralTextures]
+      FAKETYPE: [youtube, actors]
+      #FAKETYPE: [Celeb-real, Celeb-synthesis, YouTube-real]
       # ANNO_FILE: train/frames/FaceXRay/train_FF_FaceXRay.json
-      ANNO_FILE: processed_data/c0/train_81_FF++_processed.json
+      ANNO_FILE: E:\ShareID\TestDataSets\Forensic\ff++_test\test\test_Celeb-DFv2_Deepfakes_81.json
       LABEL_FOLDER: [real, fake]
     VAL:
       NAME: FF++ # This field to define datasets that can be used to train/in-dataset/cross-dataset evaluation
-      ROOT: /home/users/<user>/data/FaceForensics++/c0/
+      ROOT: E:\ShareID\TestDataSets\Forensic\ff++_test
       FROM_FILE: True
-      FAKETYPE: [Deepfakes, Face2Face, FaceSwap, NeuralTextures] # Choosing Deepfake techniques to be loaded for dataloader
+      FAKETYPE: [Deepfakes, Face2Face, FaceSwap, NeuralTextures, youtube, actors, FaceShifter, DeepFakeDetection] # Choosing Deepfake techniques to be loaded for dataloader
       # ANNO_FILE: val/frames/FaceXRay/val_FF_FaceXRay.json
-      ANNO_FILE: processed_data/c0/val_81_FF++_processed.json
+      ANNO_FILE: E:\ShareID\TestDataSets\Forensic\ff++_test\test\test_Celeb-DFv2_Deepfakes_81.json
       LABEL_FOLDER: [real, fake]
     TEST:
       NAME: Celeb-DFv2
@@ -50,18 +51,18 @@ DATASET:
       # ROOT: /home/users/<user>/data/DFDC/
       # ROOT: /home/users/<user>/data/DFD/
       # ROOT: /home/users/<user>/data/DFW/
-      ROOT : E:\ShareID\TestDataSets\Forensic\ff++_test
+      ROOT : E:\ShareID\TestDataSets\Celeb-DF-v2\laa-net_test_celeb
       FROM_FILE: False
       # FAKETYPE: [original, Deepfakes]
       # FAKETYPE: [original, Deepfakes, Face2Face, FaceSwap, NeuralTextures]
-      #FAKETYPE: [Celeb-real, Celeb-synthesis, YouTube-real]
+      FAKETYPE: [Celeb-real, Celeb-synthesis, YouTube-real]
       # FAKETYPE: [method_A, method_B, original_videos]
       # FAKETYPE: [fake, real]
       # FAKETYPE: [DeepFakeDetection_original, DeepFakeDetection]
       # FAKETYPE: [fake_test, real_test]'/
-      FAKETYPE:  [actors, youtube, DeepFakeDetection, Deepfakes, Face2Face, FaceShifter, 
-        FaceSwap, NeuralTextures]
-      ANNO_FILE: E:\ShareID\TestDataSets\Forensic\ff++_test\List_of_testing_videos_ff++.txt
+      #FAKETYPE:  [actors, youtube, DeepFakeDetection, Deepfakes, Face2Face, FaceShifter, 
+      # FaceSwap, NeuralTextures]
+      ANNO_FILE: E:\ShareID\TestDataSets\Celeb-DF-v2\laa-net_test_celeb\List_of_testing_videos.txt
       LABEL_FOLDER: [real, fake]
   TRANSFORM:
     geometry:
@@ -112,7 +113,7 @@ MODEL:
     advprop: True
 TRAIN:
   gpus: [0]
-  batch_size: 32
+  batch_size: 8
   lr: 0.00005
   epochs: 100
   begin_epoch: 48
@@ -124,14 +125,14 @@ TRAIN:
     cls_lmda: 1
     dst_hm_cls_lmda: 0
     offset_lmda: 0
-    hm_lmda: 100
+    hm_lmda: 10
     cstency_lmda: 100
     mse_reduction: sum
     ce_reduction: mean
   optimizer: SAM
   distributed: False
-  pretrained: 'pretrained_weights/PoseEfficientNet_EFN_hm100_EFPN_NoBasedCLS_Focal_C3_256Cstency100_32BI_SAM(Adam)_ADV_Erasing1_OutSigmoid_model_best.pth'
-  tensorboard: False
+  #pretrained: 'pretrained_weights/PoseEfficientNet_EFN_hm100_EFPN_NoBasedCLS_Focal_C3_256Cstency100_32BI_SAM(Adam)_ADV_Erasing1_OutSigmoid_model_best.pth'
+  tensorboard: True
   resume: True
   lr_scheduler:
     # type: MultiStepLR
