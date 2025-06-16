@@ -21,7 +21,7 @@ SAVE_DIR = r"E:\ShareID\TestDataSets\Celeb-DF-v2\laa-net_test"
 IMAGE_H, IMAGE_W, IMAGE_C = 256, 256, 3
 PADDING = 0.25
 ANNOTATION_FILE_PATH = r"E:\ShareID\TestDataSets\Celeb-DF-v2\laa-net_test\List_of_testing_videos_single.txt"
-
+VIDEO_EXTENSIONS = {".mp4", ".avi", ".AVI"}
 
 def facecrop(model, org_path, save_path, period=1, num_frames=10, dataset='original', label=None, mask_path=None, padding=PADDING):
     print(f'Processing video --- {org_path}')
@@ -187,6 +187,7 @@ if __name__=='__main__':
         # Annotation file for Celeb-DF
         with open(f'{dataset_path}List_of_{args.task}ing_videos.txt') as f:
             vid_ids = pd.read_csv(f, header = None).values.reshape(-1)
+
     #elif args.dataset in ['DFDC']:
     #    movies_path = os.path.join(dataset_path, args.task, 'videos')
     #    
@@ -207,8 +208,15 @@ if __name__=='__main__':
     #            vid_ids.append(mv_id)
     else: 
         movies_path = dataset_path
-        with open(ANNOTATION_FILE_PATH) as f:
-            vid_ids = pd.read_csv(f, header = None).values.reshape(-1)
+        if os.path.exists(ANNOTATION_FILE_PATH):
+            with open(ANNOTATION_FILE_PATH) as f:
+                vid_ids = pd.read_csv(f, header = None).values.reshape(-1)
+        else: 
+            print("Attempting at retrieving paths from directory directly.")
+            vid_ids =[]
+            for file in os.listdir(movies_path):
+                if (os.path.splitext(file)[1] in VIDEO_EXTENSIONS):
+                    vid_ids.append(file)
 
     movies_path_list = []
     mask_mov_path_list = []
@@ -230,7 +238,7 @@ if __name__=='__main__':
         #    if args.dataset in vid_ids[i]:
         #        file_list.append(vid_ids[i].split(' ')[-1])
         #else:
-            if args.dataset in vid_ids[i]:
+            if args.dataset in vid_ids[i] and os.path.exists(ANNOTATION_FILE_PATH):
                 file_list.append(vid_ids[i].split(' ')[-1])
     
     # movies_path_list = sorted(glob(movies_path+'*.mp4'))
