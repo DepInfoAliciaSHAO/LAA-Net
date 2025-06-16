@@ -3,3 +3,4 @@ __pycache__/
 pretrained_weights/*.pth
 .tensorboard/
 *.pth
+laa-net/
