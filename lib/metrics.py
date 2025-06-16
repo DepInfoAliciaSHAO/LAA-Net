@@ -3,7 +3,7 @@ import os
 import numpy as np
 from sklearn import metrics
 import torch
-from sklearn.metrics import average_precision_score, recall_score
+from sklearn.metrics import average_precision_score, recall_score, precision_recall_curve
 
 from losses.losses import _avg_sigmoid, _sigmoid
 
@@ -69,14 +69,26 @@ def bin_calculate_auc_ap_ar(cls_preds, labels, metrics_base='binary', hm_preds=N
     # AP metric
     ap = average_precision_score(labels, cls_preds)
     
+    y_pred_binary = (cls_preds >= threshold).astype(int)
     # AR metric
-    ar = recall_score(labels, (cls_preds >= threshold).astype(int), average='macro')
+    ar = recall_score(labels, y_pred_binary, average='macro')
     
+
+    from sklearn.metrics import f1_score
+
+    # --- Inside your function ---
+
+    # Binarize predictions based on the threshold
+
+
+    # The 'average="macro"' parameter does the work for you
+    mf1_correct = f1_score(labels, y_pred_binary, average='macro')
+
     # mF1 metric
-    mf1 = (ap*ar*2)/(ap+ar)
+    #mf1 = (ap*ar*2)/(ap+ar)
+    mf1 = mf1_correct
     
     return metrics.auc(fpr, tpr), ap, ar, mf1
-
 
 def get_acc_mesure_func(task='binary'):
     if task == 'binary':
