@@ -24,17 +24,20 @@ class FF(CommonDataset):
         # Load image data for each type of fake techniques
         for idx, ft in enumerate(fake_types):
             if self.compression == 'c23':
-                data_dir = os.path.join(self._cfg.DATA[self.split.upper()].ROOT, split, data_type, ft)
+                data_dir = os.path.join(self._cfg.DATA[self.split.upper()].ROOT, ft, data_type, split)
                 if not os.path.exists(data_dir):
-                    print(data_dir)
                     raise ValueError("Data Directory can not be invalid!")
-                
-                for directory in os.listdir(data_dir):
-                    img_paths_ = []
-                    for image in os.listdir(os.path.join(data_dir, directory)):
-                        img_paths_.append(os.path.join(data_dir, directory, image))
-                img_paths.extend(img_paths_)
-                labels.extend(np.full(len(img_paths_), int(ft != "Original")))
+                for lb in label_folders:
+                    if lb == "fake":
+                        # Real 0, Fake 1
+                        img_paths_ = glob(f'{data_dir}/{lb}/*.{self._cfg.IMAGE_SUFFIX}')
+                    else:
+                        #Only load real images once time
+                        if idx != 0: continue
+                        img_paths_ = glob(f'{data_dir}/{lb}/*.{self._cfg.IMAGE_SUFFIX}')
+                    
+                    img_paths.extend(img_paths_)
+                    labels.extend(np.full(len(img_paths_), int(lb == 'fake')))
             elif self.compression == 'c0':
                 data_dir = os.path.join(self._cfg.DATA[self.split.upper()].ROOT, self.split, data_type, ft)
                 if not os.path.exists(data_dir):
