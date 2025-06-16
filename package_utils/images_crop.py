@@ -222,8 +222,9 @@ if __name__=='__main__':
     mask_mov_path_list = []
     file_list = []
     
+    if os.path.exists(ANNOTATION_FILE_PATH):
     # Loading the list of specific video's names for an invidual task 'train/val/test
-    for i in range(len(vid_ids)):    
+        for i in range(len(vid_ids)):    
         #if args.dataset == 'Original':   
         #    file_list += vid_ids[i]
         #elif args.dataset in ['Face2Face','Deepfakes','FaceSwap','NeuralTextures']:
@@ -238,8 +239,10 @@ if __name__=='__main__':
         #    if args.dataset in vid_ids[i]:
         #        file_list.append(vid_ids[i].split(' ')[-1])
         #else:
-            if args.dataset in vid_ids[i] and os.path.exists(ANNOTATION_FILE_PATH):
+            if args.dataset in vid_ids[i]:
                 file_list.append(vid_ids[i].split(' ')[-1])
+    else: 
+        file_list = vid_ids
     
     # movies_path_list = sorted(glob(movies_path+'*.mp4'))
     #if args.dataset in ['Original','DeepFakeDetection','FaceShifter','Face2Face','Deepfakes','FaceSwap','NeuralTextures']:
