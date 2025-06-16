@@ -1,0 +1,1 @@
+Current ACC, AUC, AP, AR, mF1 for ['Original', 'Deepfakes', 'Face2Face', 'FaceSwap', 'NeuralTextures'] --- ['real', 'fake'] --                 50.0 -- 100.0 -- 100.0 -- 50.0 -- 66.66666666666666
