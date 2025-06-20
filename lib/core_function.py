@@ -10,6 +10,8 @@ from lib.metrics import get_acc_mesure_func, bin_calculate_auc_ap_ar
 from logs.logger import board_writing
 from package_utils.utils import debugging_panel
 
+import wandb
+
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -52,7 +54,10 @@ def train(cfg, model, critetion, optimizer, epoch, data_loader, logger, writer, 
     data_time = AverageMeter()
     losses = AverageMeter()
     acc = AverageMeter()
-    
+    cls_losses = AverageMeter()
+    consistency_losses = AverageMeter()
+    heatmap_losses = AverageMeter()
+
     #Switch to train mode
     model.train()
     data_loader = tqdm(data_loader, dynamic_ncols=True)
@@ -60,6 +65,11 @@ def train(cfg, model, critetion, optimizer, epoch, data_loader, logger, writer, 
     for i, batch_data in enumerate(data_loader):
         inputs, labels, targets, heatmaps, cstency_heatmaps, offsets = get_batch_data(batch_data)
         inputs = inputs.cuda().to(non_blocking=True, dtype=torch.float64)
+
+        if isinstance(inputs, list):
+            batch_size = inputs[0].size(0)
+        else:
+            batch_size = inputs.size(0)
         #Measuring data loading time
         data_time.update(time.time() - start)
         
@@ -108,6 +118,14 @@ def train(cfg, model, critetion, optimizer, epoch, data_loader, logger, writer, 
                     loss += loss_['offset']
                 if 'cstency' in loss_.keys():
                     loss += loss_['cstency']
+                
+                if cfg.TRAIN.optimizer != "SAM" or idx == 1:
+                    if 'cls' in loss_:
+                        cls_losses.update(loss_['cls'].item(), n=batch_size)
+                    if 'cstency' in loss_:
+                        consistency_losses.update(loss_['cstency'].item(), n=batch_size)
+                    if 'hm' in loss_:
+                        heatmap_losses.update(loss_['hm'].item(), n=batch_size)
             else:
                 loss = critetion(outputs, heatmaps)
             
@@ -131,11 +149,6 @@ def train(cfg, model, critetion, optimizer, epoch, data_loader, logger, writer, 
             acc_ = calculate_acc(first_outputs_hm, targets=targets, labels=labels)
         else:
             acc_ = calculate_acc(first_outputs_hm, first_outputs_cls, targets=targets, labels=labels, cls_lamda=critetion.cls_lmda)
-        
-        if isinstance(inputs, list):
-            batch_size = inputs[0].size(0)
-        else:
-            batch_size = inputs.size(0)
         
         #Measure accuracy and record loss
         losses.update(loss.item(), n=batch_size)
@@ -166,6 +179,14 @@ def train(cfg, model, critetion, optimizer, epoch, data_loader, logger, writer, 
         trainIters += 1
         if cfg.TRAIN.tensorboard:
             board_writing(writer, losses.avg, acc.avg, trainIters, 'Train')
+        if cfg.TRAIN.use_wandb:
+            wandb.log({
+                'Train/Loss': losses.avg,
+                'Train/Accuracy': acc.avg,
+                'Train/LossHeatmap': heatmap_losses.avg,
+                'Train/LossClass' : cls_losses.avg,
+                'Train/LossConsistency' : consistency_losses.avg
+            })
     return losses, acc, trainIters
 
 
@@ -175,7 +196,10 @@ def validate(cfg, model, critetion, epoch, data_loader, logger, writer, devices,
     data_time = AverageMeter()
     losses = AverageMeter()
     acc = AverageMeter()
-    
+    cls_losses = AverageMeter()
+    consistency_losses = AverageMeter()
+    heatmap_losses = AverageMeter()
+
     #Switch to test mode
     model.eval()
     data_loader = tqdm(data_loader, dynamic_ncols=True)
@@ -184,6 +208,10 @@ def validate(cfg, model, critetion, epoch, data_loader, logger, writer, devices,
         for i, batch_data in enumerate(data_loader):
             inputs, labels, targets, heatmaps, cstency_heatmaps, offsets = get_batch_data(batch_data)
             inputs = inputs.to(devices, non_blocking=True, dtype=torch.float64).cuda()
+            if isinstance(inputs, list):
+                batch_size = inputs[0].size(0)
+            else:
+                batch_size = inputs.size(0)
             #Measuring data loading time
             data_time.update(time.time() - start)
             
@@ -218,14 +246,18 @@ def validate(cfg, model, critetion, epoch, data_loader, logger, writer, devices,
                                   cstency_preds=outputs_cstency,
                                   cstency_gts=cstency_heatmaps)
                 loss = loss_['hm']
+                heatmap_losses.update(loss_['hm'].item(), n = batch_size)
                 if 'cls' in loss_.keys():
                     loss += loss_['cls']
+                    cls_losses.update(loss_['cls'].item(), n = batch_size)
                 if 'dst_hm_cls' in loss_.keys():
                     loss += loss_['dst_hm_cls']
                 if 'offset' in loss_.keys():
                     loss += loss_['offset']
                 if 'cstency' in loss_.keys():
                     loss += loss_['cstency']
+                    consistency_losses.update(loss_['cstency'].item(), n = batch_size)
+
             else:
                 loss = critetion(outputs, heatmaps)
             
@@ -239,11 +271,6 @@ def validate(cfg, model, critetion, epoch, data_loader, logger, writer, devices,
             else:
                 acc_ = calculate_acc(outputs_hm, outputs_cls, targets=targets, labels=labels, cls_lamda=critetion.cls_lmda)
             
-            if isinstance(inputs, list):
-                batch_size = inputs[0].size(0)
-            else:
-                batch_size = inputs.size(0)
-            
             #Measure accuracy and record loss
             losses.update(loss.item(), n=batch_size)
             acc.update(acc_, n=batch_size)
@@ -254,7 +281,15 @@ def validate(cfg, model, critetion, epoch, data_loader, logger, writer, devices,
             valIters += 1
             if cfg.TRAIN.tensorboard:
                 board_writing(writer, losses.avg, acc.avg, valIters, 'Val')
-
+            
+            if cfg.TRAIN.use_wandb:
+                wandb.log({
+                    'Val/Loss': losses.avg,
+                    'Val/Accuracy': acc.avg,
+                    'Val/LossHeatmap': heatmap_losses.avg,
+                    'Val/LossClass' : cls_losses.avg,
+                    'Val/LossConsistency' : consistency_losses.avg
+                })
             #Logging
             params = {}
             if 'Combined' in cfg.TRAIN.loss.type:
