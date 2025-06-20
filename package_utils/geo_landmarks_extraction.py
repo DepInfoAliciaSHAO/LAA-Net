@@ -83,6 +83,7 @@ class LandmarkUtility(object):
         for idx, ft in enumerate(fake_types):
             data_dir = os.path.join(self.image_root, self.split, data_type, ft)
             if not os.path.exists(data_dir):
+                print(data_dir)
                 raise ValueError("Data Directory can not be invalid!")
             
             for sub_dir in os.listdir(data_dir):
@@ -193,7 +194,7 @@ class LandmarkUtility(object):
                 print(f'Landmarks have been detected for {i} images')
         return rot_imgs, f_lmses, rot_f_lmses
 
-    def build_data(self, img_paths, file_names, **kwargs):
+    def build_data(self, img_paths, file_names, old_paths, **kwargs):
         data = dict(data=[])
         
         if 'orig_lmses' in kwargs.keys():
@@ -211,8 +212,8 @@ class LandmarkUtility(object):
                 assert len(aligned_lmses) == len(img_paths), "The length of images and aligned landmarks is not compatible!"
         
         for i, (p, f) in enumerate(zip(img_paths, file_names)):
-            print(f"P = {p}, fake_type = {p.split(os.sep)[-2]}")
-            fake_type = p.split(os.sep)[-2] if self.fake_types != ['original'] else self.fake_types[0]
+            print(p.split(os.sep))
+            fake_type = old_paths[i].split(os.sep)[-3]
             
             img_obj = self._img_obj(p, f, id=i, fake_type=fake_type)
             
@@ -258,6 +259,7 @@ if __name__ == '__main__':
     img_paths, file_names = lm_ins._load_data()
     print(f'{len(img_paths)} images have been loaded for processing!')
     
+    new_paths = []
     if extract_landmark:
         assert cfg.PREPROCESSING.facial_lm_pretrained is not None, "Landmark pretrained can not be None!"
         f_detector = dlib.get_frontal_face_detector()
@@ -265,7 +267,7 @@ if __name__ == '__main__':
         rot_imgs, f_lmses, rot_f_lmses = lm_ins.facial_landmarks(img_paths, f_detector, f_lm_detector)
         
         if save_aligned:
-            os.makedirs(f'{lm_ins.image_root}{lm_ins.split}/{lm_ins.data_type}/aligned_{lm_ins.fake_types[0]}_{cfg.PREPROCESSING.N_LANDMARKS}', exist_ok=True)
+            os.makedirs(f'{lm_ins.image_root}/{lm_ins.split}/{lm_ins.data_type}/aligned_{lm_ins.fake_types[0]}_{cfg.PREPROCESSING.N_LANDMARKS}', exist_ok=True)
             for i, img_p in enumerate(tqdm(img_paths, dynamic_ncols=True)):
                 rot_img = rot_imgs[i]
                 fn = file_names[i]
@@ -274,16 +276,16 @@ if __name__ == '__main__':
 
                 aligned_img_p = img_p.replace(lm_ins.fake_types[0], f'aligned_{lm_ins.fake_types[0]}_{cfg.PREPROCESSING.N_LANDMARKS}')
                 cv2.imwrite(os.path.join(lm_ins.image_root, aligned_img_p), rot_img)
-                img_paths[i] = aligned_img_p
+                new_paths.append(aligned_img_p)
         
         print('All landmarks have been detected and stored in memory!')
         print('Ready to save to file...')
 
     if args.file_path is None:
         if extract_landmark:
-            data = lm_ins.build_data(img_paths, file_names, orig_lmses=f_lmses, aligned_lmses=rot_f_lmses)
+            data = lm_ins.build_data(new_paths, file_names, orig_lmses=f_lmses, aligned_lmses=rot_f_lmses, old_paths=img_paths)
         else:
-            data = lm_ins.build_data(img_paths, file_names)
+            data = lm_ins.build_data(new_paths, file_names, old_paths=img_paths)
         
         try:
             lm_ins.save2json(data, fn=f'{lm_ins.split}_{lm_ins.dataset}_{lm_ins.fake_types[0]}_{cfg.PREPROCESSING.N_LANDMARKS}.json')
