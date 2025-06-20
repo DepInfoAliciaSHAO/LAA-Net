@@ -284,13 +284,27 @@ class SBIFaceForensic(MasterDataset):
         #     hm_r = np.reshape(hm_r, (-1, 1, hm_H, hm_W))
         #     target_r = np.reshape(target_r, (-1, 1, hm_H, hm_W))
         
-        img = torch.cat([torch.tensor([it.numpy() for it in img_r]), torch.tensor([it.numpy() for it in img_f])], 0)
-        heatmap = torch.cat([torch.tensor(hm_r).float(), torch.tensor(hm_f).float()], 0)
-        target = torch.cat([torch.tensor(target_r).float(), torch.tensor(target_f).float()], 0)
-        label = torch.tensor([[0]] * len(img_r) + [[1]]*len(img_f))
-        # label = torch.tensor([0] * len(img_r) + [1]*len(img_f))
-        cst = torch.cat([torch.tensor(cst_r).float(), torch.tensor(cst_f).float()], 0)
-        
+        img = torch.cat([
+            torch.from_numpy(np.array([it.numpy() for it in img_r])),
+            torch.from_numpy(np.array([it.numpy() for it in img_f]))
+        ], dim=0)
+
+        heatmap = torch.cat([
+            torch.from_numpy(np.array(hm_r)).float(),
+            torch.from_numpy(np.array(hm_f)).float()
+        ], dim=0)
+
+        target = torch.cat([
+            torch.from_numpy(np.array(target_r)).float(),
+            torch.from_numpy(np.array(target_f)).float()
+        ], dim=0)
+
+        label = torch.tensor([[0]] * len(img_r) + [[1]] * len(img_f))
+
+        cst = torch.cat([
+            torch.from_numpy(np.array(cst_r)).float(),
+            torch.from_numpy(np.array(cst_f)).float()
+        ], dim=0)
         b_size = label.size(0)
         
         # Permute idxes
