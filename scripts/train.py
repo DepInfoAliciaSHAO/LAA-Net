@@ -120,7 +120,10 @@ if __name__=='__main__':
         lr_scheduler = optim.lr_scheduler.MultiStepLR(optimizer, **cfg.TRAIN.lr_scheduler)
     else:
         lr_scheduler = LinearDecayLR(optimizer, cfg.TRAIN.epochs, cfg.TRAIN.epochs//4, last_epoch=start_epoch, booster=4)
-
+        # lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, 
+        #                                                     T_max=cfg.TRAIN.epochs, 
+        #                                                     eta_min=0, 
+        #                                                     last_epoch=start_epoch)
     #Enabling tensorboard
     writer = SummaryWriter('.tensorboard/{}_{}'.format(datetime.today().strftime('%Y-%m-%d'), cfg.TASK))
     
