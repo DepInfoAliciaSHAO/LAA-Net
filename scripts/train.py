@@ -26,6 +26,7 @@ from logs.logger import Logger, LOG_DIR
 from lib.optimizers.sam import SAM
 from lib.scheduler.linear_decay import LinearDecayLR
 
+import wandb
 
 def args_parser(args=None):
     parser = argparse.ArgumentParser("Training process...")
@@ -94,17 +95,6 @@ if __name__=='__main__':
                                   collate_fn=train_dataset.train_collate_fn)
     logger.info('Loading Train dataloader successfully! -- {}'.format(time.time() - start_loading))
     
-    # start_loading = time.time()
-    # test_dataset = build_dataset(cfg.DATASET, 
-    #                              DATASETS,
-    #                              default_args=dict(split='test', config=cfg.DATASET))
-    # test_dataloader = DataLoader(test_dataset,
-    #                              batch_size=cfg.TRAIN.batch_size * len(cfg.TRAIN.gpus),
-    #                              shuffle=True,
-    #                              pin_memory=cfg.DATASET.PIN_MEMORY,
-    #                              num_workers=cfg.DATASET.NUM_WORKERS)
-    # logger.info('Loading Test dataloader successfully! -- {}'.format(time.time() - start_loading))
-    
     #Defining Loss function and Optimizer
     critetion = build_losses(cfg.TRAIN.loss, LOSSES, default_args=dict(cfg=cfg.TRAIN.loss)).cuda().to(torch.float64)
     if cfg.TRAIN.optimizer == 'Adam':
@@ -143,6 +133,15 @@ if __name__=='__main__':
     
     #Starting training process
     logger.info('Starting training process...')
+
+    if cfg.TRAIN.use_wandb:
+        logger.info('Initializing weights and biases...')
+        wandb.init(
+            project="LAA-Net",
+            config=cfg,
+            resume=False
+        )
+
     for epoch in range(start_epoch, cfg.TRAIN.epochs):
         #Unfreezin backbone to update weights
         # if cfg.TRAIN.freeze_backbone and epoch == cfg.TRAIN.warm_up:
@@ -191,4 +190,10 @@ if __name__=='__main__':
                 min_val_loss = loss_val.avg
                 max_val_acc = acc_val.avg
                 logger.info(f'Saved best model at epoch --- {epoch}')
+    
+        if cfg.TRAIN.use_wandb:
+            wandb.log({
+                'Train/LearningRate': lr_scheduler.get_last_lr()[0],
+            })
+
         lr_scheduler.step()
