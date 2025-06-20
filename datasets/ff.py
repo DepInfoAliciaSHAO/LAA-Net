@@ -26,6 +26,7 @@ class FF(CommonDataset):
             if self.compression == 'c23':
                 data_dir = os.path.join(self._cfg.DATA[self.split.upper()].ROOT, ft, data_type, split)
                 if not os.path.exists(data_dir):
+                    print(data_dir)
                     raise ValueError("Data Directory can not be invalid!")
                 for lb in label_folders:
                     if lb == "fake":
@@ -41,6 +42,7 @@ class FF(CommonDataset):
             elif self.compression == 'c0':
                 data_dir = os.path.join(self._cfg.DATA[self.split.upper()].ROOT, self.split, data_type, ft)
                 if not os.path.exists(data_dir):
+                    print(data_dir)
                     raise ValueError("Data Directory can not be invalid!")
                 
                 for sub_dir in os.listdir(data_dir):
@@ -48,7 +50,7 @@ class FF(CommonDataset):
                     img_paths_ = glob(f'{sub_dir_path}/*.{self._cfg.IMAGE_SUFFIX}')
 
                     img_paths.extend(img_paths_)
-                    labels.extend(np.full(len(img_paths_), int(ft != 'original')))
+                    labels.extend(np.full(len(img_paths_), int(ft != 'Original')))
                 
         print('{} image paths have been loaded from FF++!'.format(len(img_paths)))          
         return img_paths, labels, mask_paths, ot_props
