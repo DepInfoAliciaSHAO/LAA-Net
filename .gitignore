@@ -4,3 +4,4 @@ pretrained_weights/*.pth
 .tensorboard/
 *.pth
 laa-net/
+wandb
