@@ -25,7 +25,7 @@ DATASET:
       TEST: 32
     TRAIN:
       NAME: FF++ # This field to define datasets that can be used to train/in-dataset/cross-dataset evaluation
-      ROOT: /home/alvaro/tests_alvaro/dataset/FaceForensics++/c23/
+      ROOT: /datasets/FF++/c23/
       # ROOT: /data/deepfake_cluster/datasets_df/FaceForensics++/c0/
       FROM_FILE: True
       FAKETYPE: [Deepfakes, Face2Face, FaceSwap, NeuralTextures]
@@ -34,7 +34,7 @@ DATASET:
       LABEL_FOLDER: [real, fake]
     VAL:
       NAME: FF++ # This field to define datasets that can be used to train/in-dataset/cross-dataset evaluation
-      ROOT: /home/alvaro/tests_alvaro/dataset/FaceForensics++/c23/
+      ROOT: /datasets/FF++/c23/
       FROM_FILE: True
       FAKETYPE: [Deepfakes, Face2Face, FaceSwap, NeuralTextures] # Choosing Deepfake techniques to be loaded for dataloader
       # ANNO_FILE: val/frames/FaceXRay/val_FF_FaceXRay.json
@@ -108,12 +108,12 @@ MODEL:
     pretrained: True
     advprop: True
 TRAIN:
-  gpus: [0]
-  batch_size: 8
-  lr: 0.00005
+  gpus: [0,1,2,3]
+  batch_size: 4
+  lr: 0.0002
   epochs: 100
-  begin_epoch: 48
-  warm_up: 6
+  begin_epoch: 0
+  warm_up: 3
   every_val_epochs: 1
   loss:
     type: CombinedFocalLoss
@@ -121,19 +121,19 @@ TRAIN:
     cls_lmda: 1
     dst_hm_cls_lmda: 0
     offset_lmda: 0
-    hm_lmda: 10
+    hm_lmda: 100
     cstency_lmda: 100
     mse_reduction: sum
     ce_reduction: mean
   optimizer: SAM
   distributed: False
   pretrained: ''
-  tensorboard: False
-  resume: True
+  tensorboard: True
+  resume: False
   lr_scheduler:
     # type: MultiStepLR
     milestones: [5, 15, 20, 25]
-    gamma: 0.5
+    gamma: 1
   freeze_backbone: True
   debug:
     active: False
@@ -151,7 +151,7 @@ TEST:
 PREPROCESSING:
   DATASET: FaceForensics
   SPLIT: train
-  ROOT: /data/deepfake_cluster/datasets_df/FaceForensics++/c23/
+  ROOT: /datasets/FF++/c23/
   FAKETYPE: [Deepfakes, Face2Face, FaceSwap, NeuralTextures]
   IMAGE_SUFFIX: jpg
   DATA_TYPE: images
