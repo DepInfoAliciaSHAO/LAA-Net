@@ -33,6 +33,7 @@ def preset_model(cfg, model, optimizer=None):
     
     #Freeze backbone if begin_epoch < warm up
     if cfg.TRAIN.freeze_backbone and start_epoch < cfg.TRAIN.warm_up:
+        print("Backbone frozen")
         freeze_backbone(cfg.MODEL, model)
     
     print('Number of parameters', sum(p.numel() for p in model.parameters()))
