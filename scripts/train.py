@@ -197,6 +197,7 @@ if __name__=='__main__':
         if cfg.TRAIN.use_wandb:
             wandb.log({
                 'Train/LearningRate': lr_scheduler.get_last_lr()[0],
+                'epoch': epoch
             })
 
         lr_scheduler.step()

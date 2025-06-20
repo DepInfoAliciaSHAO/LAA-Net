@@ -185,7 +185,8 @@ def train(cfg, model, critetion, optimizer, epoch, data_loader, logger, writer, 
                 'Train/Accuracy': acc.avg,
                 'Train/LossHeatmap': heatmap_losses.avg,
                 'Train/LossClass' : cls_losses.avg,
-                'Train/LossConsistency' : consistency_losses.avg
+                'Train/LossConsistency' : consistency_losses.avg,
+                'train_step': trainIters
             })
     return losses, acc, trainIters
 
@@ -288,7 +289,8 @@ def validate(cfg, model, critetion, epoch, data_loader, logger, writer, devices,
                     'Val/Accuracy': acc.avg,
                     'Val/LossHeatmap': heatmap_losses.avg,
                     'Val/LossClass' : cls_losses.avg,
-                    'Val/LossConsistency' : consistency_losses.avg
+                    'Val/LossConsistency' : consistency_losses.avg,
+                    'val_step': valIters
                 })
             #Logging
             params = {}
