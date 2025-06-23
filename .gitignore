@@ -203,3 +203,5 @@ laa-net/
 pretrained_weights/*.pth
 .tensorboard/
 *.pth
+
+wandb/
