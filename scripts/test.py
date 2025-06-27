@@ -30,6 +30,10 @@ from datasets import DATASETS, build_dataset
 from lib.core_function import AverageMeter
 from logs.logger import Logger, LOG_DIR
 
+import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve, auc, precision_recall_curve
+
+
 
 def parse_args(args=None):
     arg_parser = argparse.ArgumentParser('Processing testing...')
@@ -144,7 +148,7 @@ if __name__=='__main__':
         vid_preds = {}
         vid_labels = {}
         acc = AverageMeter()
-        auc = AverageMeter()
+        auc_am = AverageMeter()
         ar = AverageMeter()
         ap = AverageMeter()
         test_dataloader = tqdm(test_dataloader, dynamic_ncols=True)
@@ -189,6 +193,44 @@ if __name__=='__main__':
                 for k in vid_preds.keys():
                     total_preds = torch.cat((total_preds, torch.mean(vid_preds[k], 0, keepdim=True)), 0)
                     total_labels = torch.cat((total_labels, vid_labels[k]), 0)
+            
+            # Convert tensors to NumPy arrays
+            y_true = total_labels.cpu().numpy()
+            y_scores = total_preds[:, -1].cpu().numpy()
+
+            # ROC curve
+            fpr, tpr, thresholds = roc_curve(y_true, y_scores)
+            roc_auc = auc(fpr, tpr)
+
+            # Plot ROC curve
+            plt.figure()
+            plt.plot(fpr, tpr, color='darkorange', lw=2, label='ROC curve (AUC = %0.4f)' % roc_auc)
+            plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+            plt.xlim([-0.05, 1.05])
+            plt.ylim([-0.05, 1.05])
+            plt.xlabel('False Positive Rate (FPR)')
+            plt.ylabel('True Positive Rate (TPR)')
+            plt.title('Receiver Operating Characteristic')
+            plt.legend(loc='lower right')
+            plt.grid(True)
+            plt.savefig('roc_curve.png')
+            plt.close()
+
+            # APCER = FPR (when positive class is 'attack' / fake)
+            # BPCER = 1 - TPR
+            apcer = fpr
+            bpcer = 1 - tpr
+
+            plt.figure()
+            plt.plot(apcer, bpcer, color='blue', lw=2)
+            plt.xlabel('APCER (FPR)')
+            plt.ylabel('BPCER (1 - TPR)')
+            plt.title('APCER vs BPCER Curve')
+            plt.grid(True)
+            plt.savefig('apcer_bpcer_curve.png')
+            plt.close()
+
+
 
                 # Calculate accuracy and AUC
                 # if metrics_base == 'binary':
@@ -203,7 +245,7 @@ if __name__=='__main__':
                 
             acc.update(acc_, n=inputs.size(0))
             if not math.isnan(float(auc_)): 
-                auc.update(auc_, n=inputs.size(0))
+                auc_am.update(auc_, n=inputs.size(0))
                 ap.update(ap_, n=inputs.size(0))
                 ar.update(ar_, n=inputs.size(0))
             logger.info(f'Current ACC, AUC, AP, AR, mF1 for {cfg.DATASET.DATA.TEST.FAKETYPE} --- {cfg.DATASET.DATA.TEST.LABEL_FOLDER} -- \
