@@ -109,6 +109,15 @@ def train(cfg, model, critetion, optimizer, epoch, data_loader, logger, writer, 
                                   offset_gts=offsets,
                                   cstency_preds=outputs_cstency,
                                   cstency_gts=cstency_heatmaps)
+                
+                if cfg.TRAIN.optimizer != "SAM" or idx == 1:
+                    if 'cls' in loss_.keys():
+                        cls_losses.update(loss_['cls'].item(), n=batch_size)
+                    if 'cstency' in loss_.keys():
+                        consistency_losses.update(loss_['cstency'].item(), n=batch_size)
+                    if 'hm' in loss_.keys():
+                        heatmap_losses.update(loss_['hm'].item(), n=batch_size)
+                
                 loss = loss_['hm']
                 if 'cls' in loss_.keys():
                     loss += loss_['cls']
@@ -118,14 +127,6 @@ def train(cfg, model, critetion, optimizer, epoch, data_loader, logger, writer, 
                     loss += loss_['offset']
                 if 'cstency' in loss_.keys():
                     loss += loss_['cstency']
-                
-                if cfg.TRAIN.optimizer != "SAM" or idx == 1:
-                    if 'cls' in loss_:
-                        cls_losses.update(loss_['cls'].item(), n=batch_size)
-                    if 'cstency' in loss_:
-                        consistency_losses.update(loss_['cstency'].item(), n=batch_size)
-                    if 'hm' in loss_:
-                        heatmap_losses.update(loss_['hm'].item(), n=batch_size)
             else:
                 loss = critetion(outputs, heatmaps)
             
@@ -246,8 +247,8 @@ def validate(cfg, model, critetion, epoch, data_loader, logger, writer, devices,
                                   offset_gts=offsets,
                                   cstency_preds=outputs_cstency,
                                   cstency_gts=cstency_heatmaps)
-                loss = loss_['hm']
                 heatmap_losses.update(loss_['hm'].item(), n = batch_size)
+                loss = loss_['hm']
                 if 'cls' in loss_.keys():
                     loss += loss_['cls']
                     cls_losses.update(loss_['cls'].item(), n = batch_size)
