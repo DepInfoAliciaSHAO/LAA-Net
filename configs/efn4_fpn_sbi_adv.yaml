@@ -8,7 +8,7 @@ DATASET:
   TRAIN: True #Switch to True for training mode, False for testing mode
   COMPRESSION: c23
   IMAGE_SUFFIX: png
-  NUM_WORKERS: 7
+  NUM_WORKERS: 12
   PIN_MEMORY: True
   IMAGE_SIZE: [384, 384]
   HEATMAP_SIZE: [96, 96] #[IMAGE_SIZE//4, IMAGE_SIZE//4]
@@ -108,13 +108,14 @@ MODEL:
     pretrained: True
     advprop: True
 TRAIN:
-  gpus: [0,1,2,3]
+  use_wandb: True
+  gpus: [0,1]
   batch_size: 4
-  lr: 0.0002
+  lr: 0.00005
   epochs: 100
   begin_epoch: 0
-  warm_up: 3
-  every_val_epochs: 1
+  warm_up: 6
+  every_val_epochs: 5
   loss:
     type: CombinedFocalLoss
     use_target_weight: False
