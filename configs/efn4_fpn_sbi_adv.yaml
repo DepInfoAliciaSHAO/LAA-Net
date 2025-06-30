@@ -8,7 +8,7 @@ DATASET:
   TRAIN: True #Switch to True for training mode, False for testing mode
   COMPRESSION: c23
   IMAGE_SUFFIX: png
-  NUM_WORKERS: 7
+  NUM_WORKERS: 12
   PIN_MEMORY: True
   IMAGE_SIZE: [384, 384]
   HEATMAP_SIZE: [96, 96] #[IMAGE_SIZE//4, IMAGE_SIZE//4]
@@ -110,10 +110,10 @@ MODEL:
 TRAIN:
   gpus: [0,1,2,3]
   batch_size: 4
-  lr: 0.0002
+  lr: 0.00005
   epochs: 100
   begin_epoch: 0
-  warm_up: 3
+  warm_up: 6
   every_val_epochs: 1
   loss:
     type: CombinedFocalLoss
@@ -121,7 +121,7 @@ TRAIN:
     cls_lmda: 1
     dst_hm_cls_lmda: 0
     offset_lmda: 0
-    hm_lmda: 100
+    hm_lmda: 10
     cstency_lmda: 100
     mse_reduction: sum
     ce_reduction: mean
