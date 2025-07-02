@@ -147,9 +147,8 @@ if __name__=='__main__':
 
     for epoch in range(start_epoch, cfg.TRAIN.epochs):
         #Unfreezin backbone to update weights
-        # if cfg.TRAIN.freeze_backbone and epoch == cfg.TRAIN.warm_up:
-            
-        unfreeze_backbone(model)
+        if cfg.TRAIN.freeze_backbone and epoch == cfg.TRAIN.warm_up:
+            unfreeze_backbone(model)
         
         np.random.seed(seed + epoch)
         if epoch > 0 and cfg.DATA_RELOAD:
